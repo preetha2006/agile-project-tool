@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { updateStory, createStory } from '../services/storyService';
 import { STORY_STATUS, STORY_POINTS } from '../utils/constants';
@@ -12,8 +12,8 @@ export default function StoryModal({ story: initialStory, projectId, onClose, on
     title: initialStory?.title || '',
     description: initialStory?.description || '',
     status: initialStory?.status || 'backlog',
-    points: initialStory?.points || null,
-    project_id: projectId || initialStory?.project_id || '',
+    story_points: initialStory?.story_points || null,
+    project_id: parseInt(projectId) || initialStory?.project_id || '',
   });
 
   const modalRef = useRef();
@@ -34,7 +34,7 @@ export default function StoryModal({ story: initialStory, projectId, onClose, on
   const handlePointSelect = (point) => {
     setFormData(prev => ({ 
       ...prev, 
-      points: prev.points === point ? null : point 
+      points: prev.story_points === point ? null : point 
     }));
   };
 
@@ -136,7 +136,7 @@ export default function StoryModal({ story: initialStory, projectId, onClose, on
                     type="button"
                     onClick={() => handlePointSelect(point)}
                     className={`w-10 h-10 rounded-full font-medium transition-colors border ${
-                      formData.points === point 
+                      formData.story_points === point 
                         ? 'bg-text-primary text-bg-surface border-text-primary' 
                         : 'bg-bg-surface text-text-secondary border-border hover:border-accent-blue hover:text-text-primary'
                     }`}
@@ -170,3 +170,4 @@ export default function StoryModal({ story: initialStory, projectId, onClose, on
     </div>
   );
 }
+
