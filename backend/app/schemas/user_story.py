@@ -2,15 +2,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, field_validator
-from app.utils.constants import STORY_POINTS
+from app.utils.constants import StoryStatus, Priority, STORY_POINTS
 
 class UserStoryBase(BaseModel):
     title: str
     description: Optional[str] = None
     acceptance_criteria: Optional[str] = None
-    priority: str = "medium"
+    priority: Priority = Priority.medium
     story_points: Optional[int] = None
-    status: str = "backlog"
+    status: StoryStatus = StoryStatus.backlog
 
 class UserStoryCreate(UserStoryBase):
     project_id: int
@@ -27,9 +27,9 @@ class UserStoryUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     acceptance_criteria: Optional[str] = None
-    priority: Optional[str] = None
+    priority: Optional[Priority] = None
     story_points: Optional[int] = None
-    status: Optional[str] = None
+    status: Optional[StoryStatus] = None
     sprint_id: Optional[int] = None
 
     @field_validator('story_points')

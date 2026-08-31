@@ -1,4 +1,4 @@
-﻿# Agile Project Management Tool
+# Agile Project Management Tool
 
 A lightweight, full-stack Agile project management platform built for small software teams. The application provides clean project management through the **Project → User Story → Task** hierarchy, a Kanban board, sprint management, backlog, analytics, and asynchronous report generation.
 
@@ -44,7 +44,7 @@ This application enables a small software team to plan, track, and complete Agil
 ### Backend
 | Technology | Purpose |
 |---|---|
-| Python 3.11+ | Application language |
+| Python 3.10+ | Application language |
 | FastAPI | REST API framework with automatic OpenAPI docs |
 | Pydantic v2 | Request/response validation |
 | SQLAlchemy 2.x | ORM for database interaction |
@@ -55,23 +55,42 @@ This application enables a small software team to plan, track, and complete Agil
 
 ## Architecture
 
-```
-Browser (React)
-    │  Axios HTTP (Vite proxy → localhost:8000)
-    ▼
-FastAPI (port 8000)
-    Routers → Services → SQLAlchemy ORM
-    │
-    ▼
-SQLite (app.db)
+```mermaid
+flowchart TD
+    Browser(["Browser\nReact + Vite :5173"])
+    Proxy["Vite Dev Proxy\n/api/* → :8000"]
+    FastAPI["FastAPI :8000"]
 
-Background Workflow:
-POST /api/reports/generate
-    → Creates Report row (pending)
-    → FastAPI BackgroundTasks queues generate_report()
-    → Returns immediately to frontend
-    → Worker runs: processing → completed/failed
-GET /api/reports/{id}  ← Frontend polls every 3s
+    subgraph Routers
+        R1[projects]
+        R2[sprints]
+        R3[stories]
+        R4["tasks / comments"]
+        R5[analytics]
+        R6[reports]
+    end
+
+    subgraph Services
+        S1[project_service]
+        S2[sprint_service]
+        S3[user_story_service]
+        S4[task_service]
+        S5[analytics_service]
+        S6[report_service]
+    end
+
+    ORM["SQLAlchemy ORM"]
+    DB[("SQLite\napp.db")]
+
+    BG["BackgroundTasks queue"]
+    Worker["report_worker.py"]
+    Poll["Frontend polls\nGET /api/reports/{id}\nevery 3 s"]
+
+    Browser --> Proxy --> FastAPI
+    FastAPI --> Routers --> Services --> ORM --> DB
+    FastAPI -->|"POST /api/reports/generate\nreturns 201 immediately"| BG
+    BG --> Worker --> DB
+    Poll -.->|"polls until completed"| FastAPI
 ```
 
 ---
@@ -79,7 +98,7 @@ GET /api/reports/{id}  ← Frontend polls every 3s
 ## Setup Instructions
 
 ### Requirements
-- Python 3.11 or higher
+- Python 3.10 or higher
 - Node.js 18 or higher
 
 ### Backend Setup
@@ -150,26 +169,87 @@ VITE_API_BASE_URL=http://localhost:8000
 | Tasks | GET/POST /api/tasks, GET/PUT/DELETE /api/tasks/{id}, PATCH /api/tasks/{id}/status, PATCH /api/tasks/{id}/toggle-block |
 | Comments | GET/POST /api/tasks/{task_id}/comments |
 | Analytics | GET /api/analytics/project/{id}/stats, GET /api/analytics/sprint/{id}/burndown, GET /api/analytics/project/{id}/velocity |
-| Reports | POST /api/reports/generate, GET /api/reports/{id}, GET /api/reports/project/{id}, POST /api/reports/{id}/retry |
+| Reports | POST /api/reports/generate, GET /api/reports/{id}, GET /api/reports/{id}/download, GET /api/reports/project/{id}, POST /api/reports/{id}/retry |
 
 ---
 
 ## Database Schema
 
-```
-projects          (id, name, description, status, created_at, updated_at)
-sprints           (id, project_id→projects, name, goal, start_date, end_date, status, created_at, updated_at)
-user_stories      (id, project_id→projects, sprint_id→sprints NULL, title, description,
-                   acceptance_criteria, priority, story_points, status, created_at, updated_at)
-tasks             (id, story_id→user_stories, title, description, status, priority,
-                   assignee, is_blocked, created_at, updated_at)
-comments          (id, task_id→tasks, author, body, created_at)
-reports           (id, project_id→projects, status, report_data JSON, error_message, created_at, completed_at)
+```mermaid
+erDiagram
+    projects {
+        int id PK
+        string name
+        string description
+        string status
+        datetime created_at
+        datetime updated_at
+    }
+    sprints {
+        int id PK
+        int project_id FK
+        string name
+        string goal
+        date start_date
+        date end_date
+        string status
+        datetime created_at
+        datetime updated_at
+    }
+    user_stories {
+        int id PK
+        int project_id FK
+        int sprint_id FK
+        string title
+        string description
+        string acceptance_criteria
+        string priority
+        int story_points
+        string status
+        datetime created_at
+        datetime updated_at
+    }
+    tasks {
+        int id PK
+        int story_id FK
+        string title
+        string description
+        string status
+        string priority
+        string assignee
+        bool is_blocked
+        datetime created_at
+        datetime updated_at
+    }
+    comments {
+        int id PK
+        int task_id FK
+        string author
+        string body
+        datetime created_at
+    }
+    reports {
+        int id PK
+        int project_id FK
+        string status
+        text report_data
+        text error_message
+        datetime created_at
+        datetime completed_at
+    }
+
+    projects ||--o{ sprints : "has many"
+    projects ||--o{ user_stories : "has many"
+    projects ||--o{ reports : "has many"
+    sprints ||--o{ user_stories : "optionally contains"
+    user_stories ||--o{ tasks : "has many"
+    tasks ||--o{ comments : "has many"
 ```
 
-**Relationships:** Project → (many) UserStories → (many) Tasks → (many) Comments
-                   Project → (many) Sprints
-                   Sprint → (many) UserStories (nullable)
+**Notes:**
+- `sprint_id` on `user_stories` is nullable — stories start in the backlog with no sprint
+- `completed_at` on `reports` is nullable — set only when status reaches `completed`
+- All cascade deletes follow the relationship arrows (delete a project → deletes its sprints, stories, tasks, comments, and reports)
 
 ---
 
@@ -206,6 +286,33 @@ reports           (id, project_id→projects, status, report_data JSON, error_me
 - Status values validated against enums at schema level
 - Story points validated against [1,2,3,5,8] in Pydantic validators
 - Internal error tracebacks stored in DB, not exposed to API clients
+
+---
+
+## Testing
+
+The test suite uses **pytest** with a file-based SQLite test database (`test_run.db`) that is created before each test and deleted after — it never touches `app.db`.
+
+```bash
+cd backend
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS/Linux
+
+# Run all unit tests (fast, ~3 seconds)
+pytest tests/ -v -m "not integration"
+
+# Run everything including background-worker integration tests
+pytest tests/ -v
+```
+
+| File | What it covers |
+|---|---|
+| `tests/test_hierarchy.py` | Full Project → Story → Task creation, update, delete, cascade |\n| `tests/test_validation.py` | Enum rejection (422), Fibonacci story points, 422 error shape |
+| `tests/test_404.py` | Non-existent resource returns 404 with detail message |
+| `tests/test_reports.py` | Report generate/retrieve/list/404; background worker marked `@integration` |
+| `tests/test_comments.py` | Comment create, list, chronological order |
+
+> **Note on `@integration` tests:** The two `test_report_completes` and `test_completed_report_has_data` tests exercise the full async lifecycle. They are marked `@pytest.mark.integration` and skipped by default (`-m "not integration"`) because FastAPI's `BackgroundTasks` open their own `SessionLocal` which bypasses the test-DB dependency override — these tests pass when run against the real server.
 
 ---
 

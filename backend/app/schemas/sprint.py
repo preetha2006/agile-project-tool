@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, model_validator
+from app.utils.constants import SprintStatus
 
 class SprintBase(BaseModel):
     project_id: int
@@ -9,7 +10,7 @@ class SprintBase(BaseModel):
     goal: Optional[str] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    status: str = "planning"
+    status: SprintStatus = SprintStatus.planning
 
 class SprintCreate(SprintBase):
     @model_validator(mode='after')
@@ -23,7 +24,7 @@ class SprintUpdate(BaseModel):
     goal: Optional[str] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    status: Optional[str] = None
+    status: Optional[SprintStatus] = None
 
     @model_validator(mode='after')
     def validate_dates(self):

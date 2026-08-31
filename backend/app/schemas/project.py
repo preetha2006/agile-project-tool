@@ -2,11 +2,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, field_validator
+from app.utils.constants import ProjectStatus
 
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
-    status: str = "active"
+    status: ProjectStatus = ProjectStatus.active
 
 class ProjectCreate(ProjectBase):
     pass
@@ -14,7 +15,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[ProjectStatus] = None
 
 class ProjectResponse(ProjectBase):
     model_config = ConfigDict(from_attributes=True)
