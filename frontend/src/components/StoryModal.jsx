@@ -34,7 +34,7 @@ export default function StoryModal({ story: initialStory, projectId, onClose, on
   const handlePointSelect = (point) => {
     setFormData(prev => ({ 
       ...prev, 
-      points: prev.story_points === point ? null : point 
+      story_points: prev.story_points === point ? null : point 
     }));
   };
 
@@ -170,4 +170,5 @@ export default function StoryModal({ story: initialStory, projectId, onClose, on
     </div>
   );
 }
+
 

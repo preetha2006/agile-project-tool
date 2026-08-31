@@ -72,7 +72,7 @@ export default function SprintBoard() {
       ) : (
         <div className="flex flex-col gap-6">
           {sprints.map(sprint => (
-            <SprintCard key={sprint.id} sprint={sprint} onUpdate={refetch} />
+            <SprintCard key={sprint.id} sprint={sprint} projectId={projectId} onUpdate={refetch} />
           ))}
         </div>
       )}
