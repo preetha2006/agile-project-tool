@@ -1,0 +1,35 @@
+﻿# ── Python / Backend ──────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.pytest_cache/
+
+# SQLite database (auto-generated)
+backend/app.db
+*.db
+
+# Environment files (contain secrets)
+backend/.env
+
+# ── Node / Frontend ───────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# ── OS / Editor ───────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
