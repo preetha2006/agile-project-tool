@@ -1,6 +1,6 @@
 # Agile Project Management Tool
 
-📹 **[Watch the walkthrough video](YOUR_GOOGLE_DRIVE_LINK_HERE)**
+📹 **[Watch the walkthrough video](https://drive.google.com/file/d/1H3NlB5IltCBi7pcboVD3-Ie-Bd3ZxbLe/view?usp=sharing)**
 
 A lightweight, full-stack Agile project management platform built for small software teams. The application provides clean project management through the **Project → User Story → Task** hierarchy, a Kanban board, sprint management, backlog, analytics, and asynchronous report generation.
 
