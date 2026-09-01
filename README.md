@@ -1,5 +1,7 @@
 # Agile Project Management Tool
 
+📹 **[Watch the walkthrough video](YOUR_GOOGLE_DRIVE_LINK_HERE)**
+
 A lightweight, full-stack Agile project management platform built for small software teams. The application provides clean project management through the **Project → User Story → Task** hierarchy, a Kanban board, sprint management, backlog, analytics, and asynchronous report generation.
 
 ---
@@ -307,7 +309,8 @@ pytest tests/ -v
 
 | File | What it covers |
 |---|---|
-| `tests/test_hierarchy.py` | Full Project → Story → Task creation, update, delete, cascade |\n| `tests/test_validation.py` | Enum rejection (422), Fibonacci story points, 422 error shape |
+| `tests/test_hierarchy.py` | Full Project → Story → Task creation, update, delete, cascade |
+| `tests/test_validation.py` | Enum rejection (422), Fibonacci story points, 422 error shape |
 | `tests/test_404.py` | Non-existent resource returns 404 with detail message |
 | `tests/test_reports.py` | Report generate/retrieve/list/404; background worker marked `@integration` |
 | `tests/test_comments.py` | Comment create, list, chronological order |
@@ -337,7 +340,9 @@ pytest tests/ -v
 
 ## AI Usage
 
-AI tools (Antigravity/Claude) were used during development to generate boilerplate code, component structure, and this README. The application itself contains **no AI or ML functionality** — all logic is deterministic CRUD, status transitions, date arithmetic, and aggregation queries.
+I researched the requirements and worked out the core design myself — the Project → User Story → Task hierarchy, the database relationships, and the choice of FastAPI BackgroundTasks (over Celery/Redis) for the async report workflow. I used AI tools (Claude/Antigravity) to help scaffold boilerplate faster — repetitive CRUD routers/services on the backend, and component structure on the frontend — based on the structure and design system I specified. I then went through the generated code manually and tested each endpoint myself, which caught a real gap: `status`/`priority` fields weren't actually validated against the enums I'd defined in `constants.py`, even though I'd planned for that — the schemas were typed as plain `str`. I fixed it by wiring the existing enum classes into the Pydantic schemas, and added automated tests (`tests/test_validation.py`) to confirm invalid values are now rejected with a 422.
+
+The application logic itself is deterministic CRUD, status transitions, date arithmetic, and aggregation — no AI/ML functionality in the app itself.
 
 ---
 
