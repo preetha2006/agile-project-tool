@@ -171,7 +171,7 @@ VITE_API_BASE_URL=http://localhost:8000
 | Tasks | GET/POST /api/tasks, GET/PUT/DELETE /api/tasks/{id}, PATCH /api/tasks/{id}/status, PATCH /api/tasks/{id}/toggle-block |
 | Comments | GET/POST /api/tasks/{task_id}/comments |
 | Analytics | GET /api/analytics/project/{id}/stats, GET /api/analytics/sprint/{id}/burndown, GET /api/analytics/project/{id}/velocity |
-| Reports | POST /api/reports/generate, GET /api/reports/{id}, GET /api/reports/{id}/download, GET /api/reports/project/{id}, POST /api/reports/{id}/retry |
+| Reports | POST /api/reports/generate, GET /api/reports/{id}, GET /api/reports/project/{id}, POST /api/reports/{id}/retry |
 
 ---
 
